@@ -1,0 +1,30 @@
+server:
+  port: ${USER_SERVICE_PORT:8001}
+
+spring:
+  application:
+    name: user-service
+
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/campus_user?useUnicode=true&characterEncoding=utf-8
+    username: ${MYSQL_USERNAME:root}
+    password: ${MYSQL_PASSWORD:}
+    driver-class-name: com.mysql.jdbc.Driver
+
+  cloud:
+    nacos:
+      discovery:
+        server-addr: ${NACOS_SERVER_ADDR:127.0.0.1:8848}
+
+mybatis:
+  configuration:
+    # 打印 SQL，仅建议在教学/本地环境开启；生产环境请改为 NoLoggingImpl 或删除
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    map-underscore-to-camel-case: true
+
+logging:
+  level:
+    com.campustrading: info
+  # Sleuth 会把 X-B3-TraceId 放进 MDC，这里输出到日志前缀便于观察调用链
+  pattern:
+    level: "%5p [${spring.application.name:},%X{X-B3-TraceId:-},%X{X-B3-SpanId:-}]"

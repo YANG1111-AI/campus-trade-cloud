@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: user-service
+  cloud:
+    nacos:
+      config:
+        server-addr: ${NACOS_SERVER_ADDR:127.0.0.1:8848}
+        file-extension: yaml
+        # 在 Nacos 中创建 dataId：user-service.yaml（DEFAULT_GROUP）
+        # 示例内容： campus: { welcome: "欢迎来到校园二手交易平台" }
+      discovery:
+        server-addr: ${NACOS_SERVER_ADDR:127.0.0.1:8848}

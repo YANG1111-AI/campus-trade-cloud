@@ -1,0 +1,61 @@
+server:
+  port: ${GOODS_SERVICE_PORT:8002}
+
+spring:
+  application:
+    name: goods-service
+
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/campus_goods?useUnicode=true&characterEncoding=utf-8
+    username: ${MYSQL_USERNAME:root}
+    password: ${MYSQL_PASSWORD:}
+    driver-class-name: com.mysql.jdbc.Driver
+
+  # RabbitMQ 连接参数属于 spring.rabbitmq，之前误写在 spring.cloud.stream 下而未生效
+  rabbitmq:
+    host: ${RABBITMQ_HOST:127.0.0.1}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+
+  cloud:
+    nacos:
+      discovery:
+        server-addr: ${NACOS_SERVER_ADDR:127.0.0.1:8848}
+    stream:
+      bindings:
+        orderOutput-out-0:
+          destination: order-topic
+          content-type: application/json
+      rabbit:
+        bindings:
+          orderOutput-out-0:
+            producer:
+              durable-subscription: true
+
+  zipkin:
+    base-url: ${ZIPKIN_BASE_URL:http://127.0.0.1:9411}
+    sender:
+      type: web
+
+  sleuth:
+    sampler:
+      probability: 1.0
+
+# 开启 Feign 的 Sentinel 支持，FeignClient 上的 fallback 才会生效
+feign:
+  sentinel:
+    enabled: true
+
+mybatis:
+  type-aliases-package: com.campustrading.goodsservice.entity
+  configuration:
+    # 打印 SQL，仅建议在教学/本地环境开启
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    map-underscore-to-camel-case: true
+
+logging:
+  level:
+    com.campustrading: info
+  pattern:
+    level: "%5p [${spring.application.name:},%X{X-B3-TraceId:-},%X{X-B3-SpanId:-}]"

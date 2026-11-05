@@ -1,0 +1,40 @@
+server:
+  port: ${GATEWAY_PORT:8000}
+
+spring:
+  application:
+    name: api-gateway
+
+  cloud:
+    nacos:
+      discovery:
+        server-addr: ${NACOS_SERVER_ADDR:127.0.0.1:8848}
+    gateway:
+      discovery:
+        locator:
+          # 开启基于服务名的动态路由，例如 /user-service/** 会被自动转发
+          enabled: true
+      routes:
+        - id: user_route
+          uri: lb://user-service
+          predicates:
+            - Path=/user/**
+        - id: goods_route
+          uri: lb://goods-service
+          predicates:
+            - Path=/goods/**
+
+  zipkin:
+    base-url: ${ZIPKIN_BASE_URL:http://127.0.0.1:9411}
+    sender:
+      type: web
+
+  sleuth:
+    sampler:
+      probability: 1.0
+
+logging:
+  level:
+    com.campustrading: info
+  pattern:
+    level: "%5p [${spring.application.name:},%X{X-B3-TraceId:-},%X{X-B3-SpanId:-}]"

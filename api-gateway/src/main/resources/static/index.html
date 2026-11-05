@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>校园二手交易平台</title>
+    <!-- 引入 Vue 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- 引入 Axios -->
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <!-- 引入字体图标 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* 头部样式 */
+        .header {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            text-align: center;
+            animation: slideDown 0.5s ease;
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 36px;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header .subtitle {
+            color: #666;
+            font-size: 16px;
+        }
+
+        /* 公告栏 */
+        .welcome-banner {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 20px rgba(245, 87, 108, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            animation: fadeIn 0.6s ease;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .welcome-banner i {
+            font-size: 24px;
+            animation: bounce 2s infinite;
+        }
+
+        /* 内容区块 */
+        .section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            animation: slideUp 0.6s ease;
+        }
+
+        .section-title {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #667eea;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section-title i {
+            color: #667eea;
+            font-size: 28px;
+        }
+
+        /* 商品卡片网格 */
+        .goods-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        .goods-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            border-radius: 12px;
+            padding: 25px;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .goods-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+
+        .goods-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.3);
+            border-color: #667eea;
+        }
+
+        .goods-icon {
+            font-size: 48px;
+            color: #667eea;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .goods-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        .goods-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 8px;
+        }
+
+        .goods-price {
+            color: #e74c3c;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .goods-price::before {
+            content: '¥';
+            font-size: 18px;
+        }
+
+        .goods-stock {
+            color: #27ae60;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .goods-seller {
+            color: #7f8c8d;
+            font-size: 13px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+
+        .btn-success:hover {
+            box-shadow: 0 8px 20px rgba(56, 239, 125, 0.4);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* 表单样式 */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+            font-size: 15px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        /* 信息卡片 */
+        .info-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin-top: 20px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .info-card-title {
+            font-size: 18px;
+            margin-bottom: 15px;
+            opacity: 0.9;
+        }
+
+        .info-card-content {
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+        }
+
+        .info-item h3 {
+            font-size: 32px;
+            margin-bottom: 5px;
+        }
+
+        .info-item p {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        /* 结果提示框 */
+        .result-box {
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            animation: fadeIn 0.4s ease;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .result-success {
+            background: #d4edda;
+            border: 2px solid #28a745;
+            color: #155724;
+        }
+
+        .result-error {
+            background: #f8d7da;
+            border: 2px solid #dc3545;
+            color: #721c24;
+        }
+
+        .result-info {
+            background: #d1ecf1;
+            border: 2px solid #17a2b8;
+            color: #0c5460;
+        }
+
+        .result-box i {
+            font-size: 28px;
+        }
+
+        /* 加载动画 */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #667eea;
+        }
+
+        .loading i {
+            font-size: 48px;
+            animation: spin 1s linear infinite;
+        }
+
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state i {
+            font-size: 72px;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+
+        /* 动画定义 */
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 28px;
+            }
+
+            .goods-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .info-card-content {
+                flex-direction: column;
+                gap: 20px;
+            }
+        }
+
+        /* 徽章样式 */
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .badge-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .badge-primary {
+            background: #667eea;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+<div id="app">
+    <!-- 头部 -->
+    <div class="header">
+        <h1><i class="fas fa-shopping-bag"></i> 校园二手交易平台</h1>
+        <p class="subtitle">基于 Spring Cloud 与 Vue 3 的微服务个人项目 · <a href="https://github.com/YANG1111-AI" style="color:#667eea;">YANG1111-AI</a></p>
+    </div>
+
+    <!-- 公告栏 -->
+    <div class="welcome-banner">
+        <i class="fas fa-bullhorn"></i>
+        <span>{{ welcomeMsg }}</span>
+    </div>
+
+    <!-- 商品列表 -->
+    <div class="section">
+        <h2 class="section-title">
+            <i class="fas fa-box-open"></i>
+            热门商品
+            <span class="badge badge-primary">{{ goodsList.length }} 件商品</span>
+        </h2>
+
+        <div v-if="loading.goods" class="loading">
+            <i class="fas fa-spinner"></i>
+            <p>正在加载商品...</p>
+        </div>
+
+        <div v-else-if="goodsList.length === 0" class="empty-state">
+            <i class="fas fa-inbox"></i>
+            <p>暂无商品，快去添加一些吧！</p>
+        </div>
+
+        <div v-else class="goods-grid">
+            <div class="goods-card" v-for="item in goodsList" :key="item.id">
+                <div class="goods-icon">
+                    <i class="fas fa-box"></i>
+                </div>
+                <div class="goods-title">{{ item.title }}</div>
+                <div class="goods-info">
+                    <div class="goods-price">{{ item.price }}</div>
+                    <div class="goods-stock">
+                        <i class="fas fa-cubes"></i> 库存：{{ item.stock }}
+                    </div>
+                </div>
+                <div class="goods-seller">
+                    <i class="fas fa-user"></i> 卖家ID：{{ item.sellerId }}
+                </div>
+                <button class="btn btn-success" @click="buyGoods(item.id)" :disabled="item.stock === 0">
+                    <i class="fas fa-shopping-cart"></i>
+                    {{ item.stock === 0 ? '已售罄' : '立即购买' }}
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 用户查询 -->
+    <div class="section">
+        <h2 class="section-title">
+            <i class="fas fa-user-circle"></i>
+            用户中心
+        </h2>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">
+                    <i class="fas fa-search"></i> 用户ID查询
+                </label>
+                <input type="number"
+                       class="form-input"
+                       v-model="queryUserId"
+                       placeholder="输入用户ID（如：1 或 2）"
+                       @keyup.enter="getUserInfo">
+            </div>
+            <div class="form-group" style="display: flex; align-items: flex-end;">
+                <button class="btn btn-primary" @click="getUserInfo" :disabled="loading.user">
+                    <i class="fas" :class="loading.user ? 'fa-spinner fa-spin' : 'fa-search'"></i>
+                    {{ loading.user ? '查询中...' : '查询用户' }}
+                </button>
+            </div>
+        </div>
+
+        <!-- 用户信息卡片 -->
+        <div v-if="currentUser" class="info-card">
+            <div class="info-card-title">
+                <i class="fas fa-user-check"></i> 用户信息
+            </div>
+            <div class="info-card-content">
+                <div class="info-item">
+                    <h3>{{ currentUser.username }}</h3>
+                    <p><i class="fas fa-user"></i> 用户名</p>
+                </div>
+                <div class="info-item">
+                    <h3>¥{{ currentUser.balance }}</h3>
+                    <p><i class="fas fa-wallet"></i> 账户余额</p>
+                </div>
+                <div class="info-item">
+                    <h3>ID: {{ currentUser.id }}</h3>
+                    <p><i class="fas fa-id-card"></i> 用户编号</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 查询结果提示 -->
+        <div v-if="queryMsg && !currentUser"
+             class="result-box"
+             :class="queryMsg.includes('失败') ? 'result-error' : 'result-info'">
+            <i class="fas" :class="queryMsg.includes('失败') ? 'fa-exclamation-circle' : 'fa-info-circle'"></i>
+            <span>{{ queryMsg }}</span>
+        </div>
+    </div>
+
+    <!-- 下单结果 -->
+    <div v-if="orderResult" class="section">
+        <h2 class="section-title">
+            <i class="fas fa-receipt"></i>
+            订单状态
+        </h2>
+        <div class="result-box"
+             :class="orderResult.includes('成功') ? 'result-success' : 'result-error'">
+            <i class="fas" :class="orderResult.includes('成功') ? 'fa-check-circle' : 'fa-times-circle'"></i>
+            <div>
+                <strong>{{ orderResult.includes('成功') ? '下单成功！' : '下单失败' }}</strong>
+                <p style="margin-top: 5px;">{{ orderResult }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 页脚 -->
+    <div style="text-align: center; color: white; padding: 20px; opacity: 0.8;">
+        <p><i class="fab fa-github"></i> 项目源码：<a href="https://github.com/YANG1111-AI/campus-trade-cloud" style="color:white; text-decoration:underline;">YANG1111-AI/campus-trade-cloud</a></p>
+        <p style="margin-top: 5px; font-size: 14px;">校园二手交易微服务系统 · 个人项目 · MIT License</p>
+    </div>
+</div>
+
+<script>
+    const { createApp } = Vue;
+
+    createApp({
+        data() {
+            return {
+                goodsList: [],
+                welcomeMsg: '系统初始化中...',
+                queryUserId: 1,
+                currentUser: null,
+                queryMsg: '',
+                orderResult: '',
+                loading: {
+                    goods: false,
+                    user: false
+                }
+            }
+        },
+        mounted() {
+            this.fetchGoods();
+            this.fetchWelcome();
+        },
+        methods: {
+            // 获取商品列表
+            async fetchGoods() {
+                this.loading.goods = true;
+                try {
+                    const response = await axios.get('/goods/list');
+                    this.goodsList = response.data;
+                } catch (error) {
+                    this.$message({
+                        message: '获取商品列表失败',
+                        type: 'error'
+                    });
+                } finally {
+                    this.loading.goods = false;
+                }
+            },
+
+            // 获取配置中心欢迎语
+            async fetchWelcome() {
+                try {
+                    const response = await axios.get('/user/welcome');
+                    this.welcomeMsg = response.data;
+                } catch (error) {
+                    this.welcomeMsg = '🎉 欢迎来到校园二手交易平台';
+                }
+            },
+
+            // 查询用户
+            async getUserInfo() {
+                if (!this.queryUserId) {
+                    this.queryMsg = '请输入用户ID';
+                    return;
+                }
+
+                this.loading.user = true;
+                this.currentUser = null;
+                this.queryMsg = '查询中...';
+
+                try {
+                    const response = await axios.get(`/user/info/${this.queryUserId}`);
+                    if (response.data && response.data.id) {
+                        this.currentUser = response.data;
+                        this.queryMsg = '';
+                    } else {
+                        this.queryMsg = '未找到该用户信息';
+                    }
+                } catch (error) {
+                    this.queryMsg = '查询失败，请稍后重试';
+                } finally {
+                    this.loading.user = false;
+                }
+            },
+
+            // 购买商品
+            async buyGoods(goodsId) {
+                const buyerId = 2; // 默认买家ID
+                this.orderResult = '';
+
+                try {
+                    const response = await axios.get(`/goods/order/${goodsId}/${buyerId}`);
+                    this.orderResult = response.data;
+
+                    // 如果下单成功，显示成功消息
+                    if (response.data.includes('成功')) {
+                        this.$message({
+                            message: '下单成功！消息已发送至RabbitMQ',
+                            type: 'success'
+                        });
+                    }
+                } catch (error) {
+                    this.orderResult = error.response ? error.response.data : '网络错误，请稍后重试';
+                    this.$message({
+                        message: '下单失败',
+                        type: 'error'
+                    });
+                }
+            },
+
+            // 消息提示
+            $message(config) {
+                // 简单的消息提示实现
+                const msg = document.createElement('div');
+                msg.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    padding: 15px 25px;
+                    border-radius: 8px;
+                    background: ${config.type === 'success' ? '#28a745' : '#dc3545'};
+                    color: white;
+                    z-index: 9999;
+                    animation: slideDown 0.3s ease;
+                    box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+                `;
+                msg.textContent = config.message;
+                document.body.appendChild(msg);
+
+                setTimeout(() => {
+                    msg.style.animation = 'fadeOut 0.3s ease';
+                    setTimeout(() => msg.remove(), 300);
+                }, 3000);
+            }
+        }
+    }).mount('#app');
+</script>
+
+</body>
+</html>
